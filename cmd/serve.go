@@ -24,6 +24,7 @@ import (
 	"github.com/mdhender/queenie/internal/config"
 	"github.com/mdhender/queenie/internal/otohttp"
 	"github.com/mdhender/queenie/internal/services/greeter"
+	"github.com/mdhender/queenie/internal/services/solver"
 	"github.com/spf13/cobra"
 	"log"
 	"net"
@@ -65,6 +66,7 @@ var cmdServe = &cobra.Command{
 			log.Fatal(err)
 		}
 		greeter.RegisterGreeterService(s, greeter.Service{})
+		solver.RegisterSolverService(s, solver.Service{})
 
 		// run server in a go routine that we can cancel
 		go func() {
