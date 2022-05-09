@@ -66,7 +66,11 @@ var cmdServe = &cobra.Command{
 			log.Fatal(err)
 		}
 		greeter.RegisterGreeterService(s, greeter.Service{})
-		solver.RegisterSolverService(s, solver.Service{})
+		if solverService, err := solver.NewService(); err != nil {
+			log.Fatal(err)
+		} else {
+			solver.RegisterSolverService(s, solverService)
+		}
 
 		// run server in a go routine that we can cancel
 		go func() {

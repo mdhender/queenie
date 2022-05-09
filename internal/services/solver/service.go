@@ -22,10 +22,42 @@ package solver
 import (
 	"context"
 	"github.com/pkg/errors"
+	"os"
+	"sort"
+	"strings"
 	"unicode"
 )
 
-type Service struct{}
+type Service struct {
+	dict    map[string]bool
+	invalid map[string]bool
+	valid   map[string]bool
+	checks  map[string]bool
+	words   []string
+}
+
+func NewService() (Service, error) {
+	s := Service{}
+
+	// load the words file sourced from https://github.com/dwyl/english-words and other places
+	var err error
+	if s.dict, err = loadWords("wordlist.txt"); err != nil {
+		return Service{}, err
+	} else if s.invalid, err = loadWords("invalid.txt"); err != nil {
+		return Service{}, err
+	} else if s.valid, err = loadWords("valid.txt"); err != nil {
+		return Service{}, err
+	} else if s.checks, err = loadWords("checks.txt"); err != nil {
+		return Service{}, err
+	}
+
+	for word := range s.dict {
+		s.words = append(s.words, word)
+	}
+	sort.Strings(s.words)
+
+	return s, nil
+}
 
 func (s Service) Solve(ctx context.Context, request PuzzleRequest) (*SolutionResponse, error) {
 	// consider rejecting unknown fields (https://www.alexedwards.net/blog/how-to-properly-parse-a-json-request-body)
@@ -63,7 +95,45 @@ func (s Service) Solve(ctx context.Context, request PuzzleRequest) (*SolutionRes
 		return nil, errors.New("invalid 'hex'")
 	}
 
+	// the first letter in it must be the puzzle's center letter.
+	letters := [7]rune{centerLetter, hexLetters[0], hexLetters[1], hexLetters[2], hexLetters[3], hexLetters[4], hexLetters[5]}
+
+	var words []string
+	for _, word := range s.words {
+		if !strings.ContainsRune(word, centerLetter) {
+			continue
+		}
+		w := word
+		// remove all the allowed characters from the word
+		for _, ch := range letters {
+			w = strings.ReplaceAll(w, string(ch), "")
+		}
+		// result must be empty (ie, must not contain any other letters)
+		if len(w) == 0 {
+			words = append(words, word)
+		}
+	}
+	//sort.Strings(words)
+
 	return &SolutionResponse{
-		Words: []string{"cotton", "cottonmouth", string(centerLetter)},
+		Words: words,
 	}, nil
+}
+
+func loadWords(filename string) (map[string]bool, error) {
+	raw, err := os.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	words := make(map[string]bool)
+	for _, word := range strings.Split(string(raw), "\n") {
+		// must be at least four characters
+		if len(word) < 4 {
+			continue
+		}
+		words[strings.ToLower(word)] = true
+	}
+
+	return words, nil
 }
