@@ -32,8 +32,7 @@ type GreetRequest struct {
 	Name string
 }
 
-// GreetResponse is the response object containing a
-// person's greeting.
+// GreetResponse is the response object containing a person's greeting.
 type GreetResponse struct {
 	// Greeting is the greeting that was generated.
 	// example: "Hello Mat Ryer"
