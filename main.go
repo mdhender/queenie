@@ -22,8 +22,9 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"github.com/mdhender/queenie/cmd"
 	"log"
+	"math/rand"
 	"net/http"
 	"sort"
 	"strings"
@@ -31,17 +32,13 @@ import (
 )
 
 func main() {
-	started := time.Now()
-
 	// default log format to UTC
 	log.SetFlags(log.Ldate | log.Ltime | log.LUTC)
 
-	if err := run(); err != nil {
-		log.Println(err)
-	}
+	rand.Seed(time.Now().UnixNano())
 
-	elapsed := time.Now().Sub(started)
-	log.Printf("elapsed time: %+v\n", elapsed)
+	// run the command as given
+	cmd.Execute()
 }
 
 func run() (err error) {
@@ -148,7 +145,7 @@ func (s *server) index() http.Handler {
 }
 
 func loadwords(filename string) (map[string]bool, error) {
-	raw, err := ioutil.ReadFile(filename)
+	raw, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
