@@ -74,6 +74,9 @@ type Server struct {
 	// OnErr is called when there is an error.
 	OnErr func(w http.ResponseWriter, r *http.Request, err error)
 
+	debug struct {
+		cors bool
+	}
 	routes map[string]http.Handler
 }
 
@@ -120,6 +123,17 @@ func (s *Server) Register(service, method string, h http.HandlerFunc) {
 
 // ServeHTTP serves the request.
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		if s.debug.cors {
+			log.Printf("[cors] %s %q\n", r.Method, r.URL.Path)
+		}
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "DELETE, GET, HEAD, OPTIONS, POST, PUT")
+		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
 	if r.Method != http.MethodPost {
 		s.NotFound.ServeHTTP(w, r)
 		return

@@ -79,6 +79,14 @@ func WithContext(ctx context.Context) Option {
 	}
 }
 
+// WithDebugCors changes the default CORS debug flag from false to the given value.
+func WithDebugCors(debug bool) Option {
+	return func(s *Server) (err error) {
+		s.debug.cors = debug
+		return nil
+	}
+}
+
 // WithNotFound changes the default not found handler.
 func WithNotFound(h http.Handler) Option {
 	return func(s *Server) (err error) {

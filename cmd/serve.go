@@ -61,7 +61,7 @@ var cmdServe = &cobra.Command{
 		// create a context that we can use to cancel the server
 		ctx, cancel := context.WithCancel(context.Background())
 
-		s, err := otohttp.NewServer(cfg, otohttp.WithContext(ctx))
+		s, err := otohttp.NewServer(cfg, otohttp.WithContext(ctx), otohttp.WithDebugCors(true))
 		if err != nil {
 			log.Fatal(err)
 		}
