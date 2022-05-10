@@ -36,6 +36,9 @@ import (
 )
 
 var globalServe struct {
+	debug struct {
+		cors bool
+	}
 }
 
 var cmdServe = &cobra.Command{
@@ -61,10 +64,17 @@ var cmdServe = &cobra.Command{
 		// create a context that we can use to cancel the server
 		ctx, cancel := context.WithCancel(context.Background())
 
-		s, err := otohttp.NewServer(cfg, otohttp.WithContext(ctx), otohttp.WithDebugCors(true))
+		var options []otohttp.Option
+		options = append(options, otohttp.WithContext(ctx))
+		if globalServe.debug.cors {
+			options = append(options, otohttp.WithDebugCors(true))
+		}
+
+		s, err := otohttp.NewServer(cfg, otohttp.Options(options...))
 		if err != nil {
 			log.Fatal(err)
 		}
+
 		greeter.RegisterGreeterService(s, greeter.Service{})
 		if solverService, err := solver.NewService(); err != nil {
 			log.Fatal(err)
@@ -110,5 +120,7 @@ var cmdServe = &cobra.Command{
 }
 
 func init() {
+	cmdServe.Flags().BoolVar(&globalServe.debug.cors, "debug-cors", false, "enable CORS debugging")
+
 	cmdBase.AddCommand(cmdServe)
 }
